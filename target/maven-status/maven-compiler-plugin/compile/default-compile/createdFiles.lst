@@ -1,0 +1,4 @@
+com\flancraft\jailtracker\JailTracker.class
+com\flancraft\jailtracker\listeners\JailCommandListener.class
+com\flancraft\jailtracker\listeners\BanCommandListener.class
+com\flancraft\jailtracker\listeners\TempBanCommandListener.class
