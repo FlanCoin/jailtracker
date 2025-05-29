@@ -20,7 +20,6 @@ public class JailCommandListener implements CommandExecutor {
 
     private final JailTracker plugin;
 
-    // Lista de motivos válidos reconocidos por la web
     private static final Set<String> motivosValidos = new HashSet<>(Arrays.asList(
             "hacks", "fly", "minar survival", "insultos", "tpakill", "granja de lag", "grif", "spam", "flood", "usar bugs", "estafas", "otros"
     ));
@@ -38,7 +37,6 @@ public class JailCommandListener implements CommandExecutor {
             Player target = Bukkit.getPlayerExact(targetName);
 
             if (target != null) {
-                // Obtener motivo a partir de los args
                 String reason = "sin_clasificar";
                 if (args.length > 3) {
                     StringBuilder sb = new StringBuilder();
@@ -47,7 +45,6 @@ public class JailCommandListener implements CommandExecutor {
                     }
                     reason = sb.toString().trim().toLowerCase();
 
-                    // Si no está en la lista, ponerlo como "otros"
                     if (!motivosValidos.contains(reason)) {
                         reason = "otros";
                     }
@@ -67,10 +64,8 @@ public class JailCommandListener implements CommandExecutor {
 
                 sendToWebhook(json);
 
-                // Ejecutar el comando de Essentials
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
                         "essentials:jail " + target.getName() + " " + jailName + " " + duration);
-
             } else {
                 sender.sendMessage("§cEse jugador no está conectado.");
             }
@@ -89,19 +84,19 @@ public class JailCommandListener implements CommandExecutor {
                         .build();
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://flancraft.com/api/jail-report/"))
+                        .uri(URI.create("https://flancraftweb-backend.onrender.com/api/jails"))
                         .header("Content-Type", "application/json")
-                        .header("X-API-Key", "flancraft_super_token_439")
+                        .header("X-API-Key", plugin.getConfig().getString("jailtracker-token"))
                         .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                         .build();
 
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                plugin.getLogger().info("✅ Webhook respondió con: " + response.statusCode());
+                plugin.getLogger().info("✅ Backend respondió con: " + response.statusCode());
                 plugin.getLogger().info("📦 Respuesta: " + response.body());
 
             } catch (Exception e) {
-                plugin.getLogger().warning("❌ Error al enviar datos al webhook: " + e.getMessage());
+                plugin.getLogger().warning("❌ Error al enviar sanción al backend: " + e.getMessage());
             }
         });
     }

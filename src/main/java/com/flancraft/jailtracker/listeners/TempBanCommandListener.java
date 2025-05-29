@@ -69,19 +69,22 @@ public class TempBanCommandListener implements CommandExecutor {
     private void sendToWebhook(String json) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                HttpClient client = HttpClient.newHttpClient();
+                HttpClient client = HttpClient.newBuilder()
+                        .followRedirects(HttpClient.Redirect.ALWAYS)
+                        .build();
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://flancraft.com/api/jail-report/"))
+                        .uri(URI.create("https://flancraftweb-backend.onrender.com/api/jails"))
                         .header("Content-Type", "application/json")
-                        .header("X-API-Key", "flancraft_super_token_439")
+                        .header("X-API-Key", plugin.getConfig().getString("jailtracker-token"))
                         .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                         .build();
 
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                plugin.getLogger().info("✅ Webhook respondió con: " + response.statusCode());
+                plugin.getLogger().info("✅ Backend respondió con: " + response.statusCode());
+                plugin.getLogger().info("📦 Respuesta: " + response.body());
             } catch (Exception e) {
-                plugin.getLogger().warning("❌ Error al enviar datos al webhook: " + e.getMessage());
+                plugin.getLogger().warning("❌ Error al enviar sanción al backend: " + e.getMessage());
             }
         });
     }
